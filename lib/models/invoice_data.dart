@@ -1,0 +1,81 @@
+import 'package:invoice_app/pages/product_page.dart';
+
+class InvoiceData {
+  final String companyName;
+  final String regNo;
+  final String address1;
+  final String address2;
+  final String address3;
+  final String address4;
+  final String invoiceDate;
+  final String invoiceNo;
+  final bool sstEnabled;
+  final String? sstRate;
+  final bool serviceTaxEnabled;
+  final String? serviceTaxRate;
+  final List<ProductItem> products;
+
+  InvoiceData({
+    required this.companyName,
+    required this.regNo,
+    required this.address1,
+    required this.address2,
+    required this.address3,
+    required this.address4,
+    required this.invoiceDate,
+    required this.invoiceNo,
+    required this.sstEnabled,
+    this.sstRate,
+    required this.serviceTaxEnabled,
+    this.serviceTaxRate,
+    required this.products,
+  });
+
+  factory InvoiceData.empty() => InvoiceData(
+    companyName: '',
+    regNo: '',
+    address1: '',
+    address2: '',
+    address3: '',
+    address4: '',
+    invoiceDate: '',
+    invoiceNo: '',
+    sstEnabled: false,
+    sstRate: null,
+    serviceTaxEnabled: false,
+    serviceTaxRate: null,
+    products: [],
+  );
+
+  InvoiceData copyWith({
+    String? companyName,
+    String? regNo,
+    String? address1,
+    String? address2,
+    String? address3,
+    String? address4,
+    String? invoiceDate,
+    String? invoiceNo,
+    bool? sstEnabled,
+    String? sstRate,
+    bool? serviceTaxEnabled,
+    String? serviceTaxRate,
+    List<ProductItem>? products,
+  }) {
+    return InvoiceData(
+      companyName: companyName ?? this.companyName,
+      regNo: regNo ?? this.regNo,
+      address1: address1 ?? this.address1,
+      address2: address2 ?? this.address2,
+      address3: address3 ?? this.address3,
+      address4: address4 ?? this.address4,
+      invoiceDate: invoiceDate ?? this.invoiceDate,
+      invoiceNo: invoiceNo ?? this.invoiceNo,
+      sstEnabled: sstEnabled ?? this.sstEnabled,
+      sstRate: sstRate ?? this.sstRate,
+      serviceTaxEnabled: serviceTaxEnabled ?? this.serviceTaxEnabled,
+      serviceTaxRate: serviceTaxRate ?? this.serviceTaxRate,
+      products: products ?? this.products,
+    );
+  }
+}
