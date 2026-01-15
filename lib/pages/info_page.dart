@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:invoice_app/models/invoice_data.dart';
+import 'package:invoice_app/services/storage_service.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/custom_text_field.dart';
 
@@ -24,7 +25,7 @@ class InfoPage extends StatefulWidget {
 class _InfoPageState extends State<InfoPage> {
   /// COMPANY INFO
   final companyName = TextEditingController();
-  final regNo = TextEditingController();
+  final phoneNum = TextEditingController();
 
   /// ADDRESS
   final address1 = TextEditingController();
@@ -46,7 +47,7 @@ class _InfoPageState extends State<InfoPage> {
 
   /// ERROR MESSAGES
   String? companyNameError;
-  String? regNoError;
+  String? phoneNumberError;
   String? address1Error;
   String? address2Error;
   String? address3Error;
@@ -62,15 +63,13 @@ class _InfoPageState extends State<InfoPage> {
     super.initState();
 
     final data = widget.invoiceData;
-
-    companyName.text = data.companyName;
-    regNo.text = data.regNo;
-    address1.text = data.address1;
-    address2.text = data.address2;
-    address3.text = data.address3;
-    address4.text = data.address4;
-    invoiceDate.text = data.invoiceDate;
-    invoiceNo.text = data.invoiceNo;
+    _loadSavedData();
+    if (data.invoiceDate.isNotEmpty) {
+      invoiceDate.text = data.invoiceDate;
+    }
+    else{
+      invoiceDate.text = DateTime.now().toIso8601String().split("T").first;
+    }
 
     sstEnabled = data.sstEnabled;
     serviceTaxEnabled = data.serviceTaxEnabled;
@@ -79,7 +78,7 @@ class _InfoPageState extends State<InfoPage> {
 
     // listeners
     companyName.addListener(_updateButtonState);
-    regNo.addListener(_updateButtonState);
+    phoneNum.addListener(_updateButtonState);
     address1.addListener(_updateButtonState);
     address2.addListener(_updateButtonState);
     address3.addListener(_updateButtonState);
@@ -92,10 +91,24 @@ class _InfoPageState extends State<InfoPage> {
     });
   }
 
+  void _loadSavedData() async {
+    var data = await StorageService.getCompanyInfo();
+    setState(() {
+      companyName.text = data['name'];
+      phoneNum.text = data['phone'];
+      address1.text = data['address1'];
+      address2.text = data['address2'];
+      address3.text = data['address3'];
+      address4.text = data['address4'];
+      final nextNo = data['lastInvoiceNum'] + 1;
+      invoiceNo.text = 'INV-${nextNo.toString().padLeft(6, '0')}';
+    });
+  }
+
   void _updateButtonState() {
     isButtonEnabled.value =
         companyName.text.isNotEmpty &&
-        regNo.text.isNotEmpty &&
+        phoneNum.text.isNotEmpty &&
         address1.text.isNotEmpty &&
         address2.text.isNotEmpty &&
         address3.text.isNotEmpty &&
@@ -118,9 +131,9 @@ class _InfoPageState extends State<InfoPage> {
               ? "Company Name is required"
               : null;
           break;
-        case 'regNo':
-          regNoError = regNo.text.isEmpty
-              ? "Registration No is required"
+        case 'phoneNumber':
+          companyNameError = companyName.text.isEmpty
+              ? "Phone Number is required"
               : null;
           break;
         case 'address1':
@@ -133,22 +146,9 @@ class _InfoPageState extends State<InfoPage> {
               ? "Address Line 2 is required"
               : null;
           break;
-        case 'address3':
-          address3Error = address3.text.isEmpty ? "Postcode is required" : null;
-          break;
-        case 'address4':
-          address4Error = address4.text.isEmpty
-              ? "Address Line 4 is required"
-              : null;
-          break;
         case 'invoiceDate':
           invoiceDateError = invoiceDate.text.isEmpty
               ? "Invoice Date is required"
-              : null;
-          break;
-        case 'invoiceNo':
-          invoiceNoError = invoiceNo.text.isEmpty
-              ? "Invoice No is required"
               : null;
           break;
       }
@@ -157,13 +157,12 @@ class _InfoPageState extends State<InfoPage> {
 
   void _validateAllFields() {
     _validateField('companyName');
-    _validateField('regNo');
+    _validateField('phoneNumber');
     _validateField('address1');
     _validateField('address2');
     _validateField('address3');
     _validateField('address4');
     _validateField('invoiceDate');
-    _validateField('invoiceNo');
   }
 
   void _onNextPressed() {
@@ -177,7 +176,6 @@ class _InfoPageState extends State<InfoPage> {
 
     final invoiceData = InvoiceData(
       companyName: companyName.text,
-      regNo: regNo.text,
       address1: address1.text,
       address2: address2.text,
       address3: address3.text,
@@ -189,6 +187,8 @@ class _InfoPageState extends State<InfoPage> {
       serviceTaxEnabled: serviceTaxEnabled,
       serviceTaxRate: serviceTaxEnabled ? serviceTaxRate.text : null,
       products: widget.invoiceData.products,
+      grandTotal: 0,
+      phoneNumber: phoneNum.text,
     );
     widget.onNext(invoiceData);
   }
@@ -196,7 +196,7 @@ class _InfoPageState extends State<InfoPage> {
   @override
   void dispose() {
     companyName.dispose();
-    regNo.dispose();
+    phoneNum.dispose();
     address1.dispose();
     address2.dispose();
     address3.dispose();
@@ -238,13 +238,13 @@ class _InfoPageState extends State<InfoPage> {
               controller: companyName,
               errorText: companyNameError,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             CustomTextField(
-              label: "Registration No",
-              hintText: "Registration No",
-              icon: Icons.badge,
-              controller: regNo,
-              errorText: regNoError,
+              label: "Phone Number",
+              hintText: "Phone Number",
+              icon: Icons.phone,
+              controller: phoneNum,
+              errorText: phoneNumberError,
             ),
 
             const SizedBox(height: 16),
@@ -275,11 +275,10 @@ class _InfoPageState extends State<InfoPage> {
             ),
             const SizedBox(height: 8),
             CustomTextField(
-              label: "Address Line 3 (Postcode)",
-              hintText: "Address Line 3 (Postcode)",
+              label: "Address Line 3",
+              hintText: "Address Line 3",
               icon: Icons.location_on,
               controller: address3,
-              keyboardType: TextInputType.number,
               errorText: address3Error,
             ),
             const SizedBox(height: 8),
@@ -315,7 +314,7 @@ class _InfoPageState extends State<InfoPage> {
                   context: context,
                   initialDate: DateTime.now(),
                   firstDate: DateTime(2020),
-                  lastDate: DateTime(2030),
+                  lastDate: DateTime.now(),
                 );
                 if (date != null) {
                   invoiceDate.text = date.toIso8601String().split("T").first;

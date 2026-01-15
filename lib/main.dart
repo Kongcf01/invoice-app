@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:invoice_app/models/invoice_data.dart';
+import 'package:invoice_app/pages/pdf_page.dart';
 import 'theme.dart';
 import 'pages/info_page.dart';
 import 'pages/product_page.dart';
 import 'pages/review_page.dart';
 import 'widgets/bottom_nav.dart';
+import 'package:provider/provider.dart';
+import 'package:invoice_app/controllers/invoice_controller.dart';
 
 void main() {
-  runApp(const InvoiceApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => InvoiceController(),
+      child: const InvoiceApp(),
+    ),
+  );
 }
 
 class InvoiceApp extends StatefulWidget {
@@ -86,6 +94,13 @@ class _InvoiceAppState extends State<InvoiceApp> {
           invoiceData: invoiceData,
           showBack: true,
           onBack: _prevPage,
+          onPdfSaved: (data) {
+            setState(() {
+              invoiceData = data;
+              allowedIndex = 0;
+              currentIndex = 0;
+            });
+          },
         );
 
       default:

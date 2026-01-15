@@ -2,22 +2,22 @@ import 'package:invoice_app/pages/product_page.dart';
 
 class InvoiceData {
   final String companyName;
-  final String regNo;
   final String address1;
   final String address2;
   final String address3;
   final String address4;
   final String invoiceDate;
   final String invoiceNo;
+  final String phoneNumber;
   final bool sstEnabled;
   final String? sstRate;
   final bool serviceTaxEnabled;
   final String? serviceTaxRate;
   final List<ProductItem> products;
+  final double grandTotal;
 
   InvoiceData({
     required this.companyName,
-    required this.regNo,
     required this.address1,
     required this.address2,
     required this.address3,
@@ -29,11 +29,12 @@ class InvoiceData {
     required this.serviceTaxEnabled,
     this.serviceTaxRate,
     required this.products,
+    required this.grandTotal,
+    required this.phoneNumber,
   });
 
   factory InvoiceData.empty() => InvoiceData(
     companyName: '',
-    regNo: '',
     address1: '',
     address2: '',
     address3: '',
@@ -45,11 +46,12 @@ class InvoiceData {
     serviceTaxEnabled: false,
     serviceTaxRate: null,
     products: [],
+    grandTotal: 0,
+    phoneNumber: '',
   );
 
   InvoiceData copyWith({
     String? companyName,
-    String? regNo,
     String? address1,
     String? address2,
     String? address3,
@@ -61,10 +63,11 @@ class InvoiceData {
     bool? serviceTaxEnabled,
     String? serviceTaxRate,
     List<ProductItem>? products,
+    double? grandTotal,
+    String? phoneNumber,
   }) {
     return InvoiceData(
       companyName: companyName ?? this.companyName,
-      regNo: regNo ?? this.regNo,
       address1: address1 ?? this.address1,
       address2: address2 ?? this.address2,
       address3: address3 ?? this.address3,
@@ -76,6 +79,8 @@ class InvoiceData {
       serviceTaxEnabled: serviceTaxEnabled ?? this.serviceTaxEnabled,
       serviceTaxRate: serviceTaxRate ?? this.serviceTaxRate,
       products: products ?? this.products,
+      grandTotal: grandTotal ?? this.grandTotal,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
     );
   }
 }
