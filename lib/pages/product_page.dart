@@ -8,6 +8,7 @@ class ProductPage extends StatefulWidget {
   final void Function(InvoiceData) onNext;
   final bool showBack;
   final VoidCallback? onBack;
+
   const ProductPage({
     super.key,
     required this.invoiceData,
@@ -43,7 +44,6 @@ class _ProductPageState extends State<ProductPage> {
   void _addProduct() {
     final product = ProductItem();
 
-    //listeners
     product.nameController.addListener(_validateProducts);
     product.qtyController.addListener(_validateProducts);
     product.priceController.addListener(_validateProducts);
@@ -77,6 +77,11 @@ class _ProductPageState extends State<ProductPage> {
       }
     }
     isButtonEnabled.value = allValid;
+    setState(() {});
+  }
+
+  double get grandTotal {
+    return products.fold(0, (sum, p) => sum + p.subtotal);
   }
 
   @override
@@ -101,17 +106,16 @@ class _ProductPageState extends State<ProductPage> {
             final product = entry.value;
             return Column(
               children: [
-                ProductCard(
+                ProductBlock(
                   product: product,
                   onRemove: () => _removeProduct(index),
                   showRemove: products.length > 1,
                 ),
-                const SizedBox(height: 12),
+                const Divider(height: 32),
               ],
             );
-          }).toList(),
+          }),
 
-          // Add product button
           ElevatedButton.icon(
             onPressed: _addProduct,
             icon: const Icon(Icons.add),
@@ -119,9 +123,29 @@ class _ProductPageState extends State<ProductPage> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
           ),
 
+          const SizedBox(height: 24),
+
+          // Grand Total
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Grand Total",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                grandTotal.toStringAsFixed(2),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+            ],
+          ),
+
           const SizedBox(height: 16),
 
-          // NEXT button
           ValueListenableBuilder<bool>(
             valueListenable: isButtonEnabled,
             builder: (context, enabled, child) {
@@ -135,17 +159,14 @@ class _ProductPageState extends State<ProductPage> {
                           );
                         }
                       : null,
-
-                  child: const Text("Next"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                   ),
+                  child: const Text("Next"),
                 ),
               );
             },
           ),
-
-          const SizedBox(height: 24),
         ],
       ),
     );
@@ -158,6 +179,12 @@ class ProductItem {
   final TextEditingController qtyController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
 
+  double get subtotal {
+    final qty = double.tryParse(qtyController.text) ?? 0;
+    final price = double.tryParse(priceController.text) ?? 0;
+    return qty * price;
+  }
+
   void dispose() {
     nameController.dispose();
     codeController.dispose();
@@ -166,12 +193,12 @@ class ProductItem {
   }
 }
 
-class ProductCard extends StatelessWidget {
+class ProductBlock extends StatelessWidget {
   final ProductItem product;
   final VoidCallback? onRemove;
   final bool showRemove;
 
-  const ProductCard({
+  const ProductBlock({
     super.key,
     required this.product,
     this.onRemove,
@@ -180,57 +207,83 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CustomTextField(
-              label: "Product Name *",
-              hintText: "Enter product name",
-              icon: Icons.production_quantity_limits,
-              controller: product.nameController,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CustomTextField(
+            label: "Product Name *",
+            hintText: "Enter product name",
+            icon: Icons.production_quantity_limits,
+            controller: product.nameController,
+          ),
+          CustomTextField(
+            label: "Product Code (Optional)",
+            hintText: "Enter product code",
+            icon: Icons.code,
+            controller: product.codeController,
+          ),
+          CustomTextField(
+            label: "Quantity *",
+            hintText: "0",
+            icon: Icons.format_list_numbered,
+            controller: product.qtyController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          ),
+          CustomTextField(
+            label: "Unit Price *",
+            hintText: "0.00",
+            icon: Icons.attach_money,
+            controller: product.priceController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          ),
+
+          const SizedBox(height: 8),
+
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              "Subtotal: ${product.subtotal.toStringAsFixed(2)}",
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            CustomTextField(
-              label: "Product Code (optional)",
-              hintText: "Enter product code",
-              icon: Icons.code,
-              controller: product.codeController,
-            ),
-            CustomTextField(
-              label: "Quantity *",
-              hintText: "0",
-              icon: Icons.format_list_numbered,
-              controller: product.qtyController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-            ),
-            CustomTextField(
-              label: "Unit Price *",
-              hintText: "0.00",
-              icon: Icons.attach_money,
-              controller: product.priceController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-            ),
-            if (showRemove)
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: onRemove,
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  label: const Text(
-                    "Remove",
-                    style: TextStyle(color: Colors.red),
+          ),
+
+          if (showRemove) const SizedBox(height: 10),
+
+          if (showRemove)
+            Align(
+              alignment: Alignment.centerRight,
+              child: GestureDetector(
+                onTap: onRemove,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.red),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.delete, color: Colors.red, size: 16),
+                      SizedBox(width: 6),
+                      Text(
+                        "Remove",
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
