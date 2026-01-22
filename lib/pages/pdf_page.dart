@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:invoice_app/controllers/invoice_controller.dart';
 import 'package:invoice_app/models/invoice_data.dart';
 import 'package:invoice_app/pages/info_page.dart';
 import 'package:pdf/pdf.dart';
@@ -8,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:intl/intl.dart';
 
 class PdfView extends StatelessWidget {
   final InvoiceData invoiceData;
@@ -16,18 +16,14 @@ class PdfView extends StatelessWidget {
   Future<pw.Document> _generatePdf() async {
     final pdf = pw.Document();
 
+    final receiptFormat = PdfPageFormat(80 * PdfPageFormat.mm, double.infinity);
+
     pdf.addPage(
   pw.Page(
-    pageFormat: PdfPageFormat.a4,
+    pageFormat: receiptFormat,
+    margin: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 8),
     build: (context) {
-      return pw.Center(
-        child: pw.Container(
-          width: 300,
-          padding: const pw.EdgeInsets.all(16),
-          decoration: pw.BoxDecoration(
-            border: pw.Border.all(width: 0.5),
-          ),
-          child: pw.Column(
+      return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.stretch,
             children: [
               // ===== Header =====
@@ -65,7 +61,7 @@ class PdfView extends StatelessWidget {
               // ===== Invoice Info =====
               pw.Text('Invoice No: ${invoiceData.invoiceNo}',
                   style: const pw.TextStyle(fontSize: 10)),
-              pw.Text('Date: ${invoiceData.invoiceDate}',
+              pw.Text('Date: ${DateFormat('dd/MM/yyyy HH:mm:ss').format(invoiceData.invoiceDate)}',
                   style: const pw.TextStyle(fontSize: 10)),
 
               pw.SizedBox(height: 10),
@@ -93,6 +89,26 @@ class PdfView extends StatelessWidget {
                       ),
                     ),
                   ),
+                  pw.Expanded(
+                    child: pw.Text(
+                      'Qty',
+                      textAlign: pw.TextAlign.right,
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                  pw.Expanded(
+                    child: pw.Text(
+                      'Sub',
+                      textAlign: pw.TextAlign.right,
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
                 ],
               ),
 
@@ -105,13 +121,27 @@ class PdfView extends StatelessWidget {
                     pw.Expanded(
                       flex: 3,
                       child: pw.Text(
-                        item.nameController.text,
+                        (item.codeController.text.isNotEmpty) ? '${item.codeController.text} ${item.nameController.text}'  : item.nameController.text,
                         style: const pw.TextStyle(fontSize: 10),
                       ),
                     ),
                     pw.Expanded(
                       child: pw.Text(
                         double.parse(item.priceController.text).toStringAsFixed(2),
+                        textAlign: pw.TextAlign.right,
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        double.parse(item.qtyController.text).toStringAsFixed(2),
+                        textAlign: pw.TextAlign.right,
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        item.subtotal.toStringAsFixed(2),
                         textAlign: pw.TextAlign.right,
                         style: const pw.TextStyle(fontSize: 10),
                       ),
@@ -172,9 +202,7 @@ class PdfView extends StatelessWidget {
                 height: 50,
               ),
             ],
-          ),
-        ),
-      );
+          );
     },
   ),
 );

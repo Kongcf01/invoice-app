@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageService {
-  static Future<void> saveCompanyInfo(String name, String phone, String address1, String address2, int lastInvoiceNum, String? address3, String? address4) async {
+  static Future<void> saveCompanyInfo(String name, String phone, String address1, String address2, int lastInvoiceNum, String? address3, String? address4, bool sstEnable, int sstRate, bool serviceTaxEnable, int serviceTaxRate) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('company_name', name);
     await prefs.setString('phone_number', phone);
@@ -10,6 +10,10 @@ class StorageService {
     await prefs.setString('company_address3', address3 ?? '');
     await prefs.setString('company_address4', address4 ?? '');
     await prefs.setInt('last_invoice_number', lastInvoiceNum);
+    await prefs.setBool('sstEnable', sstEnable);
+    await prefs.setInt('sstRate', sstRate);
+    await prefs.setBool('serviceTaxEnable', serviceTaxEnable);
+    await prefs.setInt('serviceTaxRate', serviceTaxRate);
   }
 
   static Future<Map<String, dynamic>> getCompanyInfo() async {
@@ -22,6 +26,10 @@ class StorageService {
       'address3': prefs.getString('company_address3') ?? '',
       'address4': prefs.getString('company_address4') ?? '',
       'lastInvoiceNum': prefs.getInt('last_invoice_number') ?? 0,
+      'sstEnable': prefs.getBool('sstEnable') ?? false,
+      'sstRate': prefs.getInt('sstRate') ?? 0,
+      'serviceTaxEnable': prefs.getBool('serviceTaxEnable') ?? false,
+      'serviceTaxRate': prefs.getInt('serviceTaxRate') ?? 0,
     };
   }
 }

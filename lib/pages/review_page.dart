@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:invoice_app/models/invoice_data.dart';
 import 'package:invoice_app/pages/pdf_page.dart';
 import 'package:invoice_app/services/storage_service.dart';
@@ -38,6 +39,10 @@ class _ReviewPageState extends State<ReviewPage> {
       invoiceNoInt,
       widget.invoiceData.address3,
       widget.invoiceData.address4,
+      widget.invoiceData.sstEnabled,
+      int.parse(widget.invoiceData.sstRate ?? '0'),
+      widget.invoiceData.serviceTaxEnabled,
+      int.parse(widget.invoiceData.serviceTaxRate ?? '0'),
     );
   }
 
@@ -78,7 +83,8 @@ class _ReviewPageState extends State<ReviewPage> {
       serviceTaxAmount = subtotal * rate / 100;
     }
 
-    final grandTotal = subtotal + sstAmount + serviceTaxAmount;
+    widget.invoiceData.grandTotal = subtotal + sstAmount + serviceTaxAmount;
+
 
     return Scaffold(
       appBar: AppTopBar(title: "Invoice", showBack: widget.showBack, onBack: widget.onBack),
@@ -100,7 +106,7 @@ class _ReviewPageState extends State<ReviewPage> {
                       "Address",
                       "${widget.invoiceData.address1}, ${widget.invoiceData.address2}, ${widget.invoiceData.address3}, ${widget.invoiceData.address4}",
                     ),
-                    InfoRow("Invoice Date", widget.invoiceData.invoiceDate),
+                    InfoRow("Invoice Date", DateFormat('dd/MM/yyyy HH:mm:ss').format(widget.invoiceData.invoiceDate)),
                     InfoRow("Invoice No", widget.invoiceData.invoiceNo),
                     if (widget.invoiceData.sstEnabled)
                       InfoRow("SST", "${widget.invoiceData.sstRate}%"),
@@ -137,7 +143,7 @@ class _ReviewPageState extends State<ReviewPage> {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: SummaryRow("Grand Total", grandTotal.toStringAsFixed(2)),
+                child: SummaryRow("Grand Total", widget.invoiceData.grandTotal.toStringAsFixed(2)),
               ),
             ),
             const SizedBox(height: 24),

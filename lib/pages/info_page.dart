@@ -35,6 +35,7 @@ class _InfoPageState extends State<InfoPage> {
 
   /// INVOICE INFO
   final invoiceDate = TextEditingController();
+  DateTime invoiceDateTime = DateTime.now();
   final invoiceNo = TextEditingController();
 
   /// TAX
@@ -64,17 +65,7 @@ class _InfoPageState extends State<InfoPage> {
 
     final data = widget.invoiceData;
     _loadSavedData();
-    if (data.invoiceDate.isNotEmpty) {
-      invoiceDate.text = data.invoiceDate;
-    }
-    else{
-      invoiceDate.text = DateTime.now().toIso8601String().split("T").first;
-    }
-
-    sstEnabled = data.sstEnabled;
-    serviceTaxEnabled = data.serviceTaxEnabled;
-    sstRate.text = data.sstRate ?? '';
-    serviceTaxRate.text = data.serviceTaxRate ?? '';
+    invoiceDate.text = data.invoiceDate.toIso8601String().split("T").first;
 
     // listeners
     companyName.addListener(_updateButtonState);
@@ -93,6 +84,7 @@ class _InfoPageState extends State<InfoPage> {
 
   void _loadSavedData() async {
     var data = await StorageService.getCompanyInfo();
+
     setState(() {
       companyName.text = data['name'];
       phoneNum.text = data['phone'];
@@ -102,6 +94,10 @@ class _InfoPageState extends State<InfoPage> {
       address4.text = data['address4'];
       final nextNo = data['lastInvoiceNum'] + 1;
       invoiceNo.text = 'INV-${nextNo.toString().padLeft(6, '0')}';
+      sstEnabled = data['sstEnable'].toString().toLowerCase() == 'true';
+      sstRate.text = data['sstRate'];
+      serviceTaxEnabled = data['serviceTaxEnable'].toString().toLowerCase() == 'true';
+      serviceTaxRate.text = data['serviceTaxRate'];
     });
   }
 
@@ -113,7 +109,7 @@ class _InfoPageState extends State<InfoPage> {
         address2.text.isNotEmpty &&
         address3.text.isNotEmpty &&
         address4.text.isNotEmpty &&
-        invoiceDate.text.isNotEmpty &&
+        // invoiceDate.text.isNotEmpty &&
         invoiceNo.text.isNotEmpty;
 
     if (_showErrors) {
@@ -132,7 +128,7 @@ class _InfoPageState extends State<InfoPage> {
               : null;
           break;
         case 'phoneNumber':
-          companyNameError = companyName.text.isEmpty
+          phoneNumberError = phoneNum.text.isEmpty
               ? "Phone Number is required"
               : null;
           break;
@@ -146,11 +142,11 @@ class _InfoPageState extends State<InfoPage> {
               ? "Address Line 2 is required"
               : null;
           break;
-        case 'invoiceDate':
-          invoiceDateError = invoiceDate.text.isEmpty
-              ? "Invoice Date is required"
-              : null;
-          break;
+        // case 'invoiceDate':
+        //   invoiceDateError = invoiceDate.text.isEmpty
+        //       ? "Invoice Date is required"
+        //       : null;
+        //   break;
       }
     });
   }
@@ -180,7 +176,7 @@ class _InfoPageState extends State<InfoPage> {
       address2: address2.text,
       address3: address3.text,
       address4: address4.text,
-      invoiceDate: invoiceDate.text,
+      invoiceDate: invoiceDateTime,
       invoiceNo: invoiceNo.text,
       sstEnabled: sstEnabled,
       sstRate: sstEnabled ? sstRate.text : null,
@@ -317,7 +313,10 @@ class _InfoPageState extends State<InfoPage> {
                   lastDate: DateTime.now(),
                 );
                 if (date != null) {
-                  invoiceDate.text = date.toIso8601String().split("T").first;
+                  setState(() {
+                    invoiceDateTime = date;
+                    invoiceDate.text = date.toIso8601String().split("T").first;
+                  });
                 }
               },
             ),

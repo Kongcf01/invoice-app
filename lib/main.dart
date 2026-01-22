@@ -7,15 +7,8 @@ import 'pages/product_page.dart';
 import 'pages/review_page.dart';
 import 'widgets/bottom_nav.dart';
 import 'package:provider/provider.dart';
-import 'package:invoice_app/controllers/invoice_controller.dart';
-
 void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => InvoiceController(),
-      child: const InvoiceApp(),
-    ),
-  );
+  runApp(const InvoiceApp());
 }
 
 class InvoiceApp extends StatefulWidget {

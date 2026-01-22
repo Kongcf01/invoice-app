@@ -6,7 +6,7 @@ class InvoiceData {
   final String address2;
   final String address3;
   final String address4;
-  final String invoiceDate;
+  final DateTime invoiceDate;
   final String invoiceNo;
   final String phoneNumber;
   final bool sstEnabled;
@@ -14,7 +14,7 @@ class InvoiceData {
   final bool serviceTaxEnabled;
   final String? serviceTaxRate;
   final List<ProductItem> products;
-  final double grandTotal;
+  double grandTotal;
 
   InvoiceData({
     required this.companyName,
@@ -29,7 +29,7 @@ class InvoiceData {
     required this.serviceTaxEnabled,
     this.serviceTaxRate,
     required this.products,
-    required this.grandTotal,
+    this.grandTotal = 0,
     required this.phoneNumber,
   });
 
@@ -39,7 +39,7 @@ class InvoiceData {
     address2: '',
     address3: '',
     address4: '',
-    invoiceDate: '',
+    invoiceDate: DateTime.now(),
     invoiceNo: '',
     sstEnabled: false,
     sstRate: null,
@@ -56,7 +56,7 @@ class InvoiceData {
     String? address2,
     String? address3,
     String? address4,
-    String? invoiceDate,
+    DateTime? invoiceDate,
     String? invoiceNo,
     bool? sstEnabled,
     String? sstRate,
