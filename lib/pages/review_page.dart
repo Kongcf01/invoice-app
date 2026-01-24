@@ -24,11 +24,10 @@ class ReviewPage extends StatefulWidget {
 }
 
 class _ReviewPageState extends State<ReviewPage> {
-
   void onIssueInvoice() async {
     final rawInvoiceNo = widget.invoiceData.invoiceNo
-    .replaceFirst('INV-', '')
-    .replaceFirst(RegExp(r'^0+'), '');
+        .replaceFirst('INV-', '')
+        .replaceFirst(RegExp(r'^0+'), '');
 
     final invoiceNoInt = int.parse(rawInvoiceNo.isEmpty ? '0' : rawInvoiceNo);
     await StorageService.saveCompanyInfo(
@@ -58,7 +57,7 @@ class _ReviewPageState extends State<ReviewPage> {
     if (saved == true) {
       widget.onPdfSaved(InvoiceData.empty());
     }
-}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,15 +78,19 @@ class _ReviewPageState extends State<ReviewPage> {
     }
 
     if (widget.invoiceData.serviceTaxEnabled) {
-      final rate = double.tryParse(widget.invoiceData.serviceTaxRate ?? '0') ?? 0;
+      final rate =
+          double.tryParse(widget.invoiceData.serviceTaxRate ?? '0') ?? 0;
       serviceTaxAmount = subtotal * rate / 100;
     }
 
     widget.invoiceData.grandTotal = subtotal + sstAmount + serviceTaxAmount;
 
-
     return Scaffold(
-      appBar: AppTopBar(title: "Invoice", showBack: widget.showBack, onBack: widget.onBack),
+      appBar: AppTopBar(
+        title: "Invoice",
+        showBack: widget.showBack,
+        onBack: widget.onBack,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -106,12 +109,20 @@ class _ReviewPageState extends State<ReviewPage> {
                       "Address",
                       "${widget.invoiceData.address1}, ${widget.invoiceData.address2}, ${widget.invoiceData.address3}, ${widget.invoiceData.address4}",
                     ),
-                    InfoRow("Invoice Date", DateFormat('dd/MM/yyyy HH:mm:ss').format(widget.invoiceData.invoiceDate)),
+                    InfoRow(
+                      "Invoice Date",
+                      DateFormat(
+                        'dd/MM/yyyy HH:mm:ss',
+                      ).format(widget.invoiceData.invoiceDate),
+                    ),
                     InfoRow("Invoice No", widget.invoiceData.invoiceNo),
                     if (widget.invoiceData.sstEnabled)
                       InfoRow("SST", "${widget.invoiceData.sstRate}%"),
                     if (widget.invoiceData.serviceTaxEnabled)
-                      InfoRow("Service Tax", "${widget.invoiceData.serviceTaxRate}%"),
+                      InfoRow(
+                        "Service Tax",
+                        "${widget.invoiceData.serviceTaxRate}%",
+                      ),
                   ],
                 ),
               ),
@@ -143,19 +154,22 @@ class _ReviewPageState extends State<ReviewPage> {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: SummaryRow("Grand Total", widget.invoiceData.grandTotal.toStringAsFixed(2)),
+                child: SummaryRow(
+                  "Grand Total",
+                  widget.invoiceData.grandTotal.toStringAsFixed(2),
+                ),
               ),
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.save),
-                label: const Text("SAVE"),
-              ),
-            ),
-            const SizedBox(height: 8),
+            // SizedBox(
+            //   width: double.infinity,
+            //   child: ElevatedButton.icon(
+            //     onPressed: () {},
+            //     icon: const Icon(Icons.save),
+            //     label: const Text("SAVE"),
+            //   ),
+            // ),
+            // const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(

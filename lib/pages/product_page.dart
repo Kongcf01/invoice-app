@@ -161,6 +161,7 @@ class _ProductPageState extends State<ProductPage> {
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
                   ),
                   child: const Text("Next"),
                 ),
