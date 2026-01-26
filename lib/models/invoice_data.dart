@@ -11,10 +11,13 @@ class InvoiceData {
   final String phoneNumber;
   final bool sstEnabled;
   final String? sstRate;
+  double? sstAmt;
   final bool serviceTaxEnabled;
   final String? serviceTaxRate;
+  double? serviceTaxAmt;
   final List<ProductItem> products;
   double grandTotal;
+  double grandTotalBeforeTax;
 
   InvoiceData({
     required this.companyName,
@@ -26,10 +29,13 @@ class InvoiceData {
     required this.invoiceNo,
     required this.sstEnabled,
     this.sstRate,
+    this.sstAmt,
     required this.serviceTaxEnabled,
     this.serviceTaxRate,
+    this.serviceTaxAmt,
     required this.products,
     this.grandTotal = 0,
+    this.grandTotalBeforeTax = 0,
     required this.phoneNumber,
   });
 
@@ -43,8 +49,10 @@ class InvoiceData {
     invoiceNo: '',
     sstEnabled: false,
     sstRate: null,
+    sstAmt: 0,
     serviceTaxEnabled: false,
     serviceTaxRate: null,
+    serviceTaxAmt: 0,
     products: [],
     grandTotal: 0,
     phoneNumber: '',
@@ -60,10 +68,13 @@ class InvoiceData {
     String? invoiceNo,
     bool? sstEnabled,
     String? sstRate,
+    double? sstAmt,
     bool? serviceTaxEnabled,
     String? serviceTaxRate,
+    double? serviceTaxAmt,
     List<ProductItem>? products,
     double? grandTotal,
+    double? grandTotalBeforeTax,
     String? phoneNumber,
   }) {
     return InvoiceData(
@@ -76,10 +87,13 @@ class InvoiceData {
       invoiceNo: invoiceNo ?? this.invoiceNo,
       sstEnabled: sstEnabled ?? this.sstEnabled,
       sstRate: sstRate ?? this.sstRate,
+      sstAmt: sstAmt ?? this.sstAmt,
       serviceTaxEnabled: serviceTaxEnabled ?? this.serviceTaxEnabled,
       serviceTaxRate: serviceTaxRate ?? this.serviceTaxRate,
+      serviceTaxAmt: serviceTaxAmt ?? this.serviceTaxAmt,
       products: products ?? this.products,
       grandTotal: grandTotal ?? this.grandTotal,
+      grandTotalBeforeTax: grandTotalBeforeTax ?? this.grandTotalBeforeTax,
       phoneNumber: phoneNumber ?? this.phoneNumber,
     );
   }

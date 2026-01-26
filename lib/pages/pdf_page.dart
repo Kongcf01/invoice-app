@@ -101,7 +101,7 @@ class PdfView extends StatelessWidget {
                   ),
                   pw.Expanded(
                     child: pw.Text(
-                      'Sub',
+                      'Amt',
                       textAlign: pw.TextAlign.right,
                       style: pw.TextStyle(
                         fontWeight: pw.FontWeight.bold,
@@ -154,6 +154,72 @@ class PdfView extends StatelessWidget {
               _divider(),
 
               // ===== Total =====
+              if(invoiceData.serviceTaxEnabled || invoiceData.sstEnabled)
+              pw.Row(
+                children: [
+                  pw.Expanded(
+                    child: pw.Text(
+                      'Total Exclude Tax',
+                      textAlign: pw.TextAlign.right,
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                  pw.Expanded(
+                      child: pw.Text(
+                        invoiceData.grandTotalBeforeTax.toStringAsFixed(2),
+                        textAlign: pw.TextAlign.right,
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
+                    ),
+                ],
+              ),
+              if(invoiceData.serviceTaxEnabled)
+              pw.Row(
+                children: [
+                  pw.Expanded(
+                    child: pw.Text(
+                      'Service Tax',
+                      textAlign: pw.TextAlign.right,
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                  pw.Expanded(
+                      child: pw.Text(
+                        (invoiceData.serviceTaxAmt ?? 0).toStringAsFixed(2),
+                        textAlign: pw.TextAlign.right,
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
+                    ),
+                ],
+              ),
+              if(invoiceData.sstEnabled)
+              pw.Row(
+                children: [
+                  pw.Expanded(
+                    child: pw.Text(
+                      'SST',
+                      textAlign: pw.TextAlign.right,
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                  pw.Expanded(
+                      child: pw.Text(
+                        (invoiceData.sstAmt ?? 0).toStringAsFixed(2),
+                        textAlign: pw.TextAlign.right,
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
+                    ),
+                ],
+              ),
               pw.Row(
                 children: [
                   pw.Expanded(

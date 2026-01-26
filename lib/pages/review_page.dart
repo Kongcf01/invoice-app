@@ -82,7 +82,9 @@ class _ReviewPageState extends State<ReviewPage> {
           double.tryParse(widget.invoiceData.serviceTaxRate ?? '0') ?? 0;
       serviceTaxAmount = subtotal * rate / 100;
     }
-
+    widget.invoiceData.grandTotalBeforeTax = subtotal;
+    widget.invoiceData.sstAmt = sstAmount;
+    widget.invoiceData.serviceTaxAmt = serviceTaxAmount;
     widget.invoiceData.grandTotal = subtotal + sstAmount + serviceTaxAmount;
 
     return Scaffold(
@@ -154,10 +156,19 @@ class _ReviewPageState extends State<ReviewPage> {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: SummaryRow(
-                  "Grand Total",
-                  widget.invoiceData.grandTotal.toStringAsFixed(2),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (widget.invoiceData.serviceTaxEnabled || widget.invoiceData.sstEnabled)
+                        InfoRow("Total Before Tax", widget.invoiceData.grandTotalBeforeTax.toStringAsFixed(2)),
+                      if (widget.invoiceData.serviceTaxEnabled)
+                        InfoRow("Service Tax", '${(widget.invoiceData.serviceTaxRate)}%'),
+                      if (widget.invoiceData.sstEnabled)
+                        InfoRow("SST", '${widget.invoiceData.sstRate}%'),
+                      SummaryRow("Grand Total", widget.invoiceData.grandTotal.toStringAsFixed(2),
                 ),
+                    ],
+                  ),
               ),
             ),
             const SizedBox(height: 24),
