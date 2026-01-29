@@ -1,24 +1,69 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:invoice_app/models/invoice_data.dart';
+import 'package:invoice_app/pages/pdf_page.dart';
+import 'package:invoice_app/services/storage_service.dart';
 import '../widgets/app_top_bar.dart';
 
-class ReviewPage extends StatelessWidget {
+class ReviewPage extends StatefulWidget {
   final InvoiceData invoiceData;
+  final void Function(InvoiceData) onPdfSaved;
   final bool showBack;
   final VoidCallback? onBack;
 
   const ReviewPage({
     super.key,
     required this.invoiceData,
-    this.showBack = true,
+    required this.onPdfSaved,
+    this.showBack = false,
     this.onBack,
   });
+
+  @override
+  State<ReviewPage> createState() => _ReviewPageState();
+}
+
+class _ReviewPageState extends State<ReviewPage> {
+  void onIssueInvoice() async {
+    final rawInvoiceNo = widget.invoiceData.invoiceNo
+        .replaceFirst('INV-', '')
+        .replaceFirst(RegExp(r'^0+'), '');
+
+    final invoiceNoInt = int.parse(rawInvoiceNo.isEmpty ? '0' : rawInvoiceNo);
+    await StorageService.saveCompanyInfo(
+      widget.invoiceData.companyName,
+      widget.invoiceData.phoneNumber,
+      widget.invoiceData.address1,
+      widget.invoiceData.address2,
+      invoiceNoInt,
+      widget.invoiceData.address3,
+      widget.invoiceData.address4,
+      widget.invoiceData.sstEnabled,
+      int.parse(widget.invoiceData.sstRate ?? '0'),
+      widget.invoiceData.serviceTaxEnabled,
+      int.parse(widget.invoiceData.serviceTaxRate ?? '0'),
+    );
+  }
+
+  Future<void> _openPdf(BuildContext context) async {
+    onIssueInvoice();
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PdfView(invoiceData: widget.invoiceData),
+      ),
+    );
+
+    if (saved == true) {
+      widget.onPdfSaved(InvoiceData.empty());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     double subtotal = 0.0;
 
-    for (var p in invoiceData.products) {
+    for (var p in widget.invoiceData.products) {
       final qty = double.tryParse(p.qtyController.text) ?? 0;
       final price = double.tryParse(p.priceController.text) ?? 0;
       subtotal += qty * price;
@@ -27,20 +72,27 @@ class ReviewPage extends StatelessWidget {
     double sstAmount = 0.0;
     double serviceTaxAmount = 0.0;
 
-    if (invoiceData.sstEnabled) {
-      final rate = double.tryParse(invoiceData.sstRate ?? '0') ?? 0;
+    if (widget.invoiceData.sstEnabled) {
+      final rate = double.tryParse(widget.invoiceData.sstRate ?? '0') ?? 0;
       sstAmount = subtotal * rate / 100;
     }
 
-    if (invoiceData.serviceTaxEnabled) {
-      final rate = double.tryParse(invoiceData.serviceTaxRate ?? '0') ?? 0;
+    if (widget.invoiceData.serviceTaxEnabled) {
+      final rate =
+          double.tryParse(widget.invoiceData.serviceTaxRate ?? '0') ?? 0;
       serviceTaxAmount = subtotal * rate / 100;
     }
-
-    final grandTotal = subtotal + sstAmount + serviceTaxAmount;
+    widget.invoiceData.grandTotalBeforeTax = subtotal;
+    widget.invoiceData.sstAmt = sstAmount;
+    widget.invoiceData.serviceTaxAmt = serviceTaxAmount;
+    widget.invoiceData.grandTotal = subtotal + sstAmount + serviceTaxAmount;
 
     return Scaffold(
-      appBar: AppTopBar(title: "Invoice", showBack: showBack, onBack: onBack),
+      appBar: AppTopBar(
+        title: "Invoice",
+        showBack: widget.showBack,
+        onBack: widget.onBack,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -53,25 +105,33 @@ class ReviewPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    InfoRow("Company Name", invoiceData.companyName),
-                    InfoRow("Registration No", invoiceData.regNo),
+                    InfoRow("Company Name", widget.invoiceData.companyName),
+                    InfoRow("Phone Number", widget.invoiceData.phoneNumber),
                     InfoRow(
                       "Address",
-                      "${invoiceData.address1}, ${invoiceData.address2}, ${invoiceData.address3}, ${invoiceData.address4}",
+                      "${widget.invoiceData.address1}, ${widget.invoiceData.address2}, ${widget.invoiceData.address3}, ${widget.invoiceData.address4}",
                     ),
-                    InfoRow("Invoice Date", invoiceData.invoiceDate),
-                    InfoRow("Invoice No", invoiceData.invoiceNo),
-                    if (invoiceData.sstEnabled)
-                      InfoRow("SST", "${invoiceData.sstRate}%"),
-                    if (invoiceData.serviceTaxEnabled)
-                      InfoRow("Service Tax", "${invoiceData.serviceTaxRate}%"),
+                    InfoRow(
+                      "Invoice Date",
+                      DateFormat(
+                        'dd/MM/yyyy HH:mm:ss',
+                      ).format(widget.invoiceData.invoiceDate),
+                    ),
+                    InfoRow("Invoice No", widget.invoiceData.invoiceNo),
+                    if (widget.invoiceData.sstEnabled)
+                      InfoRow("SST", "${widget.invoiceData.sstRate}%"),
+                    if (widget.invoiceData.serviceTaxEnabled)
+                      InfoRow(
+                        "Service Tax",
+                        "${widget.invoiceData.serviceTaxRate}%",
+                      ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 12),
             // Products
-            ...invoiceData.products.map((p) {
+            ...widget.invoiceData.products.map((p) {
               final qty = double.tryParse(p.qtyController.text) ?? 0;
               final price = double.tryParse(p.priceController.text) ?? 0;
               final subtotal = qty * price;
@@ -96,23 +156,37 @@ class ReviewPage extends StatelessWidget {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: SummaryRow("Grand Total", grandTotal.toStringAsFixed(2)),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (widget.invoiceData.serviceTaxEnabled || widget.invoiceData.sstEnabled)
+                        InfoRow("Total Before Tax", widget.invoiceData.grandTotalBeforeTax.toStringAsFixed(2)),
+                      if (widget.invoiceData.serviceTaxEnabled)
+                        InfoRow("Service Tax", '${(widget.invoiceData.serviceTaxRate)}%'),
+                      if (widget.invoiceData.sstEnabled)
+                        InfoRow("SST", '${widget.invoiceData.sstRate}%'),
+                      SummaryRow("Grand Total", widget.invoiceData.grandTotal.toStringAsFixed(2),
+                ),
+                    ],
+                  ),
               ),
             ),
             const SizedBox(height: 24),
+            // SizedBox(
+            //   width: double.infinity,
+            //   child: ElevatedButton.icon(
+            //     onPressed: () {},
+            //     icon: const Icon(Icons.save),
+            //     label: const Text("SAVE"),
+            //   ),
+            // ),
+            // const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.save),
-                label: const Text("SAVE"),
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () async {
+                  _openPdf(context);
+                },
                 icon: const Icon(Icons.print),
                 label: const Text("PRINT"),
               ),
