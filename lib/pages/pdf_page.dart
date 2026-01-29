@@ -80,8 +80,12 @@ class PdfView extends StatelessWidget {
               // ===== Table Header =====
               pw.Row(
                 children: [
+                  pw.SizedBox(
+                    width: 10,
+                    child: pw.Text(''),
+                  ),
+                  pw.SizedBox(width: 4),
                   pw.Expanded(
-                    flex: 3,
                     child: pw.Text(
                       'Description',
                       style: pw.TextStyle(
@@ -90,35 +94,23 @@ class PdfView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  pw.Expanded(
-                    child: pw.Text(
-                      'Price',
-                      textAlign: pw.TextAlign.right,
-                      style: pw.TextStyle(
-                        fontWeight: pw.FontWeight.bold,
-                        fontSize: 10,
-                      ),
-                    ),
+                  pw.SizedBox(
+                    width: 40,
+                    child: pw.Text('Price',
+                        textAlign: pw.TextAlign.right,
+                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
                   ),
-                  pw.Expanded(
-                    child: pw.Text(
-                      'Qty',
-                      textAlign: pw.TextAlign.right,
-                      style: pw.TextStyle(
-                        fontWeight: pw.FontWeight.bold,
-                        fontSize: 10,
-                      ),
-                    ),
+                  pw.SizedBox(
+                    width: 25,
+                    child: pw.Text('Qty',
+                        textAlign: pw.TextAlign.right,
+                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
                   ),
-                  pw.Expanded(
-                    child: pw.Text(
-                      'Amt',
-                      textAlign: pw.TextAlign.right,
-                      style: pw.TextStyle(
-                        fontWeight: pw.FontWeight.bold,
-                        fontSize: 10,
-                      ),
-                    ),
+                  pw.SizedBox(
+                    width: 50,
+                    child: pw.Text('Amt',
+                        textAlign: pw.TextAlign.right,
+                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
                   ),
                 ],
               ),
@@ -126,39 +118,63 @@ class PdfView extends StatelessWidget {
               pw.SizedBox(height: 4),
 
               // ===== Items =====
-              ...invoiceData.products.map(
-                (item) => pw.Row(
-                  children: [
-                    pw.Expanded(
-                      flex: 3,
-                      child: pw.Text(
-                        (item.codeController.text.isNotEmpty) ? '${item.codeController.text} ${item.nameController.text}'  : item.nameController.text,
-                        style: pw.TextStyle(fontSize: 10, font: fontType),
+              ...invoiceData.products.asMap().entries.map(
+                (entry) { 
+                  final index = entry.key + 1;
+                  final item = entry.value;
+                  return pw.Row(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.SizedBox(
+                        width: 10,
+                        child: pw.Text(
+                          index.toString(),
+                          textAlign: pw.TextAlign.right,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
                       ),
-                    ),
-                    pw.Expanded(
-                      child: pw.Text(
-                        double.parse(item.priceController.text).toStringAsFixed(2),
-                        textAlign: pw.TextAlign.right,
-                        style: const pw.TextStyle(fontSize: 10),
+                      pw.SizedBox(width: 4),
+                      pw.Expanded(
+                        child: pw.Text(
+                          (item.codeController.text.isNotEmpty) ? '${item.codeController.text} ${item.nameController.text}'  : item.nameController.text,
+                          style: pw.TextStyle(fontSize: 10, font: fontType),
+                        ),
                       ),
-                    ),
-                    pw.Expanded(
-                      child: pw.Text(
-                        double.parse(item.qtyController.text).toStringAsFixed(2),
-                        textAlign: pw.TextAlign.right,
-                        style: const pw.TextStyle(fontSize: 10),
+                      pw.SizedBox(
+                        width: 40,
+                        child: pw.Text(
+                          NumberFormat('#,##0.00').format(double.parse(item.priceController.text)),
+                          textAlign: pw.TextAlign.right,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
                       ),
-                    ),
-                    pw.Expanded(
-                      child: pw.Text(
-                        item.subtotal.toStringAsFixed(2),
-                        textAlign: pw.TextAlign.right,
-                        style: const pw.TextStyle(fontSize: 10),
+                      pw.SizedBox(
+                        width: 25,
+                        child: pw.Text(
+                          NumberFormat('#,##0').format(double.parse(item.qtyController.text)),
+                          textAlign: pw.TextAlign.right,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                      pw.SizedBox(
+                        width: 50,
+                        child: pw.Text(
+                          NumberFormat('#,##0.00').format(item.subtotal),
+                          textAlign: pw.TextAlign.right,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
+                      ),
+                    ],
+                  );
+                }
               ),
 
               pw.SizedBox(height: 8),
@@ -178,10 +194,14 @@ class PdfView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  pw.Expanded(
+                  pw.SizedBox(width: 40),
+                  pw.SizedBox(
+                    width: 80,
                       child: pw.Text(
-                        invoiceData.grandTotalBeforeTax.toStringAsFixed(2),
+                        NumberFormat('#,##0.00').format(invoiceData.grandTotalBeforeTax),
                         textAlign: pw.TextAlign.right,
+                        maxLines: 1,
+                        softWrap: false,
                         style: const pw.TextStyle(fontSize: 10),
                       ),
                     ),
@@ -200,10 +220,14 @@ class PdfView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  pw.Expanded(
+                  pw.SizedBox(width: 40),
+                  pw.SizedBox(
+                    width: 80,
                       child: pw.Text(
-                        (invoiceData.serviceTaxAmt ?? 0).toStringAsFixed(2),
+                        NumberFormat('#,##0.00').format((invoiceData.serviceTaxAmt ?? 0)),
                         textAlign: pw.TextAlign.right,
+                        maxLines: 1,
+                        softWrap: false,
                         style: const pw.TextStyle(fontSize: 10),
                       ),
                     ),
@@ -222,10 +246,14 @@ class PdfView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  pw.Expanded(
+                  pw.SizedBox(width: 40),
+                  pw.SizedBox(
+                    width: 80,
                       child: pw.Text(
-                        (invoiceData.sstAmt ?? 0).toStringAsFixed(2),
+                        NumberFormat('#,##0.00').format((invoiceData.sstAmt ?? 0)),
                         textAlign: pw.TextAlign.right,
+                        maxLines: 1,
+                        softWrap: false,
                         style: const pw.TextStyle(fontSize: 10),
                       ),
                     ),
@@ -234,19 +262,23 @@ class PdfView extends StatelessWidget {
               pw.Row(
                 children: [
                   pw.Expanded(
-                    flex: 3,
                     child: pw.Text(
                       'Total',
+                      textAlign: pw.TextAlign.right,
                       style: pw.TextStyle(
                         fontWeight: pw.FontWeight.bold,
                         fontSize: 12,
                       ),
                     ),
                   ),
-                  pw.Expanded(
+                  pw.SizedBox(width: 40),
+                  pw.SizedBox(
+                    width: 80,
                     child: pw.Text(
-                      'RM ${invoiceData.grandTotal.toStringAsFixed(2)}',
+                      "RM ${NumberFormat('#,##0.00').format(invoiceData.grandTotal)}",
                       textAlign: pw.TextAlign.right,
+                      maxLines: 1,
+                      softWrap: false,
                       style: pw.TextStyle(
                         fontWeight: pw.FontWeight.bold,
                         fontSize: 12,
@@ -288,43 +320,12 @@ class PdfView extends StatelessWidget {
   }
 
   pw.Widget _divider() {
-  return pw.Text(
-    '******************************',
-    textAlign: pw.TextAlign.center,
-    style: const pw.TextStyle(fontSize: 10),
-  );
-}
-
-  // Future<void> _savePdf(BuildContext context, pw.Document pdf) async {
-  //   final dir = await getApplicationDocumentsDirectory();
-  //   final file = File('${dir.path}/invoice.pdf');
-  //   await file.writeAsBytes(await pdf.save());
-
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     const SnackBar(content: Text('PDF saved successfully')),
-  //   );
-  // }
-
-//   Future<void> _savePdfWithPicker(
-//   BuildContext context,
-//   pw.Document pdf,
-// ) async {
-//   final path = await FilePicker.platform.saveFile(
-//     dialogTitle: 'Save Invoice',
-//     fileName: '${invoiceData.invoiceNo}.pdf',
-//     type: FileType.custom,
-//     allowedExtensions: ['pdf'],
-//   );
-
-//   if (path == null) return;
-
-//   final file = File(path);
-//   await file.writeAsBytes(await pdf.save());
-
-//   ScaffoldMessenger.of(context).showSnackBar(
-//     const SnackBar(content: Text('PDF saved successfully')),
-//   );
-// }
+    return pw.Text(
+      '******************************',
+      textAlign: pw.TextAlign.center,
+      style: const pw.TextStyle(fontSize: 10),
+    );
+  }
 
   Future<void> _savePdf(BuildContext context, pw.Document pdf) async {
     try {
